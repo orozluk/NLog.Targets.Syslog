@@ -63,7 +63,10 @@ namespace NLog.Targets.Syslog.MessageSend
                 .ContinueWith(t =>
                 {
                     if (t.Exception == null) // t.IsFaulted is false
+                    {
+                        this.TidyUp();
                         return Task.FromResult<object>(null);
+                    }
 
                     InternalLogger.Warn(t.Exception?.GetBaseException(), "[Syslog] SendAsync failed");
                     TidyUp();
