@@ -24,12 +24,14 @@ namespace NLog.Targets.Syslog.MessageSend
         private readonly KeepAliveConfig keepAliveConfig;
         private readonly bool useTls;
         private readonly Func<X509Certificate2Collection> retrieveClientCertificates;
+        private readonly RemoteCertificateValidationCallback remoteCertificateValidationCallback;
         private readonly FramingMethod framing;
         private TcpClient tcp;
         private Stream stream;
 
         public Tcp(TcpConfig tcpConfig) : base(tcpConfig.Server, tcpConfig.Port, tcpConfig.ReconnectInterval)
         {
+            this.remoteCertificateValidationCallback = tcpConfig.RemoteCertificateValidationCallback;
             keepAliveConfig = tcpConfig.KeepAlive;
             useTls = tcpConfig.Tls.Enabled;
             retrieveClientCertificates = tcpConfig.Tls.RetrieveClientCertificates;
@@ -72,7 +74,9 @@ namespace NLog.Targets.Syslog.MessageSend
                 return tcpStream;
 
             // Do not dispose TcpClient inner stream when disposing SslStream (TcpClient disposes it)
-            var sslStream = new SslStream(tcpStream, true);
+            var sslStream = (this.remoteCertificateValidationCallback == null)
+                                ? new SslStream(tcpStream, true)
+                                : new SslStream(tcpStream, true, this.remoteCertificateValidationCallback);
             sslStream.AuthenticateAsClient(Server, retrieveClientCertificates(), SslProtocols.Tls12, false);
 
             return sslStream;

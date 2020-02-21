@@ -6,6 +6,8 @@ using System.ComponentModel;
 
 namespace NLog.Targets.Syslog.Settings
 {
+    using System.Net.Security;
+
     /// <inheritdoc cref="NotifyPropertyChanged" />
     /// <inheritdoc cref="IDisposable" />
     /// <summary>TCP configuration</summary>
@@ -18,6 +20,7 @@ namespace NLog.Targets.Syslog.Settings
         private int port;
         private int reconnectInterval;
         private KeepAliveConfig keepAlive;
+        private RemoteCertificateValidationCallback callback;
         private readonly PropertyChangedEventHandler keepAlivePropsChanged;
         private TlsConfig tls;
         private readonly PropertyChangedEventHandler tlsPropsChanged;
@@ -35,6 +38,13 @@ namespace NLog.Targets.Syslog.Settings
         {
             get => port;
             set => SetProperty(ref port, value);
+        }
+
+        /// <summary>The Remote certificate validation callback</summary>
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback
+        {
+            get => callback;
+            set => SetProperty(ref callback, value);
         }
 
         /// <summary>The time interval, in milliseconds, after which a connection is retried</summary>
